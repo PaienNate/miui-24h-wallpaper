@@ -55,10 +55,11 @@ public class OfflineSolarSunTimeProvider implements SunTimeProvider {
         double cosDec = Math.cos(Math.asin(sinDec));
         double cosH = (cosDeg(90.833) - sinDec * sinDeg(lat)) / (cosDec * cosDeg(lat));
         if (cosH > 1.0 || cosH < -1.0) return null;
-        double hRise = 360.0 - Math.toDegrees(Math.acos(cosH));
-        double hSet = Math.toDegrees(Math.acos(cosH));
-        double jRise = jTransit - hRise / 360.0;
-        double jSet = jTransit + hSet / 360.0;
+        // Hour angle (degrees). See "Sunrise equation" (alternative calculation):
+        //   Jrise = Jtransit - w0/360,  Jset = Jtransit + w0/360
+        double omega = Math.toDegrees(Math.acos(cosH));
+        double jRise = jTransit - omega / 360.0;
+        double jSet = jTransit + omega / 360.0;
         return new double[] { jRise, jSet };
     }
 
