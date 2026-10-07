@@ -1,41 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Alynx Live Wallpaper</string>
-    <string name="action_remove">Remove</string>
-    <string name="action_about">About</string>
-    <string name="fire_rain">Fire Rain</string>
-    <string name="wallpaper_description">Alynx Live Wallpaper</string>
-    <string name="path">Path:</string>
-    <string name="name">Name:</string>
-    <string name="enter_wallpaper_name">Enter wallpaper name</string>
-    <string name="choose">Choose</string>
-    <string name="ok">OK</string>
-    <string name="cancel">Cancel</string>
-    <string name="add_wallpaper">Add Wallpaper</string>
-    <string name="internal">Internal</string>
-    <string name="wallpaper_thumbnail">Wallpaper thumbnail</string>
-    <string name="same_wallpaper">%s and %s have the same path</string>
-    <string name="no_thumbnail">Failed to generate thumbnail for %s</string>
-    <string name="app_detail">This is a live wallpaper app which allows you to choose video as wallpaper.\n\nNeeds GLESv2 or higher version support for video cutting.\n\nSome icon are gotten from https://www.flaticon.com/, thanks to author Freepik for app icon, Hanan for add icon on button and Daniel Bruce for check icon on button.\n\nVideo Fire Rain is gotten from https://www.videvo.net/, thanks to author aRTHOR.</string>
-    <string name="app_author">Alynx Zhou</string>
-    <string name="app_author_link">https://alynx.one/</string>
-    <string name="app_link">Project homepage: https://livewallpaper.alynx.one/</string>
-    <string name="app_version">Version %s (%d) %s</string>
-    <string name="empty_name_or_path">Cannot add wallpaper with empty name or path</string>
-    <string name="invalid_path">Wallpaper path invalid, loading default…</string>
-    <string name="default_failed">Failed to load default wallpaper! Please set manually.</string>
-    <string name="action_allow_slide">Allow Slide</string>
-    <string name="action_disallow_slide">Disallow Slide</string>
-    <string name="slide_warning">On some low performance device, frequently sliding may leads to stuck.</string>
-    <string name="gles_version">Needs to support GLESv2 or higher version!</string>
-    <string name="tips_content">Here are some tips for users:\n\nTap thumbnails in list to preview a wallpaper.\n\nTap \"APPLY\" button to apply a wallpaper.\n\nTap bottom-right \"add\" button to add your video as wallpaper.\n\nIf you want to remove a wallpaper from list, you can find \"Remove\" in menu.\n\nIf you choose a video as current wallpaper, don\'t remove the original video file, because this app needs to read it.\n\nYou will back to this app if you touch \"Settings\" button in preview, it\'s not a bug, because this app\'s settings are inside the menu of main activity, not other activities.\n\nSome system (like some devices from Xiaomi and Huawei) limits that you can only set live wallpaper to desktop, not lock screen, this is not a problem that can be solved by this app.\n\nIf you added a video on external MicroSD card and set it as wallpaper, this app may not load it automatically after reboot, because it cannot get persistable permission for external MicroSD card, so try to move video to internal storage.\n\n\nFor Xiaomi users:\n\nBy default MIUI disabled System Document Content Provider, which is used by this app to choose file. Please go to \"Settings\" - \"More Apps\" - touch menu \"Show system apps\" - find \"Documents\" and enable it.\n\nSome Xiaomi device (like MIX 2) cannot set wallpaper in this app, after previewing and applying wallpaper in this app please go to your system\'s wallpaper settings, choose live wallpaper, then select \"Alynx Live Wallpaper\" to apply it.\n\n\nFor Vivo / Oppo users:\n\nIf you find two or more apps that can preview wallpaper after touch thumbnails, please try them one by one and find which one is available.\n\n\nFor OnePlus 3 / 3T users:\n\nThere is a bug that when you turn off screen you will see a piece of wallpaper blink into black while animating. It seems to be a system or OpenGL driver issue from OnePlus. Anyone knows how to solve it please contact me.\n\n\nFor Samsung users:\n\nActually this app implements \"Infinity Wallpaper\", you just need to enable slide in menu. But Samsung gives no document about how to declare a live wallpaper support this feature. So when you choose it, you will still see a toast say it does not support this feature.</string>
-    <string name="action_tips">Tips</string>
-    <string name="action_apply">Apply</string>
-    <string name="choose_wallpaper">Needs to choose this app in system live wallpaper settings first.\n\nPlease select \"Alynx Live Wallpaper\" in next view.</string>
-    <string name="choose_wallpaper_title">Note: Choose Wallpaper</string>
-    <string name="remove_tips">Tap \"REMOVE\" button on card to remove it. Tap bottom-right \"check\" button to quit removal mode.</string>
-    <string name="removed_invalid_card">Wallpaper %s was invalid and has been removed</string>
-    <string name="applied_wallpaper">Applied wallpaper %s</string>
-    <string name="current">Current</string>
-    <string name="choose_file">Choose file with button…</string>
+    <string name="app_name">MIUI 24H 壁纸</string>
+    <string name="wallpaper_description">MIUI 11 「24 小时」动态视频壁纸替代品，按日出日落自动切换 10 段视频。</string>
+
+    <string name="sun_source_title">日出日落来源</string>
+    <string name="sun_source_offline">离线算法（需定位）</string>
+    <string name="sun_source_tencent">腾讯天气（IP 定位）</string>
+    <string name="sun_source_openmeteo">Open-Meteo（联网）</string>
+    <string name="sun_source_sunrisesunset">sunrise-sunset.org（联网）</string>
+    <string name="sun_source_hardcoded">固定 06:00 / 18:00</string>
+
+    <string name="apply_wallpaper">应用壁纸</string>
+    <string name="refresh_now">立即刷新日出日落</string>
+    <string name="status_loading">正在计算…</string>
+    <string name="status_fmt">来源：%1$s\n日出：%2$s　日落：%3$s\n当前视频：第 %4$d 段%s</string>
+    <string name="night_suffix">（深色模式）</string>
+    <string name="toast_applied">已应用，请在预览页确认</string>
+    <string name="toast_location_needed">该来源需要定位权限</string>
 </resources>
