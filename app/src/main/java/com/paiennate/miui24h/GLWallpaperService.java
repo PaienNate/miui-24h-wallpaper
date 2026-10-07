@@ -118,7 +118,11 @@ public class GLWallpaperService extends WallpaperService {
                     player.play();
                 }
             } else {
-                if (player != null) player.pause();
+                if (player != null) {
+                    player.pause();
+                    // Mirror MIUI: seek to start when hidden so next screen-on replays from the beginning.
+                    player.seekTo(0);
+                }
                 glSurfaceView.onPause();
             }
         }
@@ -189,7 +193,8 @@ public class GLWallpaperService extends WallpaperService {
             player = new ExoPlayer.Builder(context).setTrackSelector(trackSelector).build();
             renderer.setSourcePlayer(player);
             player.setMediaItem(MediaItem.fromUri(Uri.fromFile(file)));
-            player.setRepeatMode(Player.REPEAT_MODE_ALL);
+            // Match MIUI's Video24WallpaperService: setLooping(false) -> play once, hold last frame.
+            player.setRepeatMode(Player.REPEAT_MODE_OFF);
             player.setVolume(0f);
             player.prepare();
             player.play();
