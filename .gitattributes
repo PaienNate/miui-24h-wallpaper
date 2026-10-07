@@ -1,0 +1,12 @@
+* text=auto
+*.sh text eol=lf
+gradlew text eol=lf
+*.bat text eol=crlf
+*.glsl text eol=lf
+*.java text eol=lf
+*.gradle text eol=lf
+*.xml text eol=lf
+*.properties text eol=lf
+gradle/wrapper/gradle-wrapper.jar binary
+*.png binary
+*.webp binary
