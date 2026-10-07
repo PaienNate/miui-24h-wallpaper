@@ -2,8 +2,10 @@ package com.paiennate.miui24h;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +22,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -142,6 +147,16 @@ public class MainActivity extends Activity {
             }
         });
         root.addView(refresh);
+
+        Button crashBtn = new Button(this);
+        crashBtn.setText("查看 / 复制崩溃日志");
+        crashBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCrashLog();
+            }
+        });
+        root.addView(crashBtn);
 
         status = new TextView(this);
         root.addView(status);
@@ -269,6 +284,38 @@ public class MainActivity extends Activity {
                 st.sunsetMin / 60, st.sunsetMin % 60,
                 videoId, night ? "（深色模式）" : "");
         status.setText(text);
+    }
+
+    private void showCrashLog() {
+        File f = new File(getFilesDir(), LWApplication.CRASH_FILE);
+        String text;
+        if (f.exists()) {
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line).append('\n');
+            } catch (Exception e) {
+                sb.append("read failed: ").append(e);
+            }
+            text = sb.toString();
+        } else {
+            text = "暂无崩溃日志（文件不存在）";
+        }
+        try {
+            ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("crash", text));
+        } catch (Throwable ignored) {
+        }
+        final TextView tv = new TextView(this);
+        tv.setText(text);
+        tv.setTextIsSelectable(true);
+        float d = getResources().getDisplayMetrics().density;
+        tv.setPadding((int) (12 * d), (int) (12 * d), (int) (12 * d), (int) (12 * d));
+        new AlertDialog.Builder(this)
+                .setTitle("崩溃日志（已复制到剪贴板）")
+                .setView(tv)
+                .setPositiveButton("关闭", null)
+                .show();
     }
 
     private void applyWallpaper() {
