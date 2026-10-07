@@ -6,15 +6,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ConfigurationInfo;
+import android.database.ContentObserver;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.Settings;
 import android.service.wallpaper.WallpaperService;
 import android.view.SurfaceHolder;
 
 import androidx.media3.common.C;
 import androidx.media3.common.MediaItem;
+import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
@@ -29,16 +34,57 @@ public class GLWallpaperService extends WallpaperService {
         private GLWallpaperRenderer renderer;
         private ExoPlayer player;
         private int currentVideoId = -1;
+        /** MIUI's mNextVideoId: a requested video that is applied once the current one finishes. */
+        private int pendingVideoId = -1;
         private boolean visible = false;
+
+        /** MIUI switches only on completion/error, and only if a next video was requested. */
+        private final Player.Listener playerListener = new Player.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int state) {
+                if (state == Player.STATE_ENDED) {
+                    applyPending();
+                }
+            }
+
+            @Override
+            public void onPlayerError(PlaybackException error) {
+                Utils.debug("GLWallpaperEngine", "player error: " + error.getErrorCodeName());
+                applyPending();
+            }
+        };
 
         private final BroadcastReceiver changeReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context c, Intent intent) {
-                if (!visible || renderer == null) return;
-                int id = Video24Controller.currentVideoId(context);
-                if (id != currentVideoId) {
-                    playVideo(id);
+                recomputeAndMaybeSwitch();
+            }
+        };
+
+        /** MIUI keys off real screen on/off (not visibility): replay on screen-on, rewind on screen-off. */
+        private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context c, Intent intent) {
+                final String action = intent.getAction();
+                if (Intent.ACTION_SCREEN_ON.equals(action)) {
+                    if (player != null) {
+                        player.seekTo(0);
+                        player.play();
+                    }
+                } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
+                    if (player != null) {
+                        player.pause();
+                        player.seekTo(0);
+                    }
                 }
+            }
+        };
+
+        /** MIUI observes ui_night_mode and reschedules immediately. */
+        private final ContentObserver uiModeObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
+            @Override
+            public void onChange(boolean self) {
+                recomputeAndMaybeSwitch();
             }
         };
 
@@ -76,12 +122,33 @@ public class GLWallpaperService extends WallpaperService {
             } else {
                 registerReceiver(changeReceiver, filter);
             }
+            try {
+                context.getContentResolver().registerContentObserver(
+                        Settings.Secure.getUriFor("ui_night_mode"), false, uiModeObserver);
+            } catch (Throwable ignored) {
+            }
+            try {
+                // System broadcasts -> the exported flag is not required.
+                IntentFilter screenFilter = new IntentFilter();
+                screenFilter.addAction(Intent.ACTION_SCREEN_ON);
+                screenFilter.addAction(Intent.ACTION_SCREEN_OFF);
+                registerReceiver(screenReceiver, screenFilter);
+            } catch (Throwable ignored) {
+            }
         }
 
         @Override
         public void onDestroy() {
             try {
                 unregisterReceiver(changeReceiver);
+            } catch (Throwable ignored) {
+            }
+            try {
+                unregisterReceiver(screenReceiver);
+            } catch (Throwable ignored) {
+            }
+            try {
+                context.getContentResolver().unregisterContentObserver(uiModeObserver);
             } catch (Throwable ignored) {
             }
             super.onDestroy();
@@ -111,18 +178,14 @@ public class GLWallpaperService extends WallpaperService {
             if (renderer == null || glSurfaceView == null) return;
             if (isVisible) {
                 glSurfaceView.onResume();
-                int id = Video24Controller.currentVideoId(context);
-                if (id != currentVideoId) {
-                    playVideo(id);
-                } else if (player != null) {
+                recomputeAndMaybeSwitch();
+                // Resume (do not replay) unless playback already ended.
+                if (player != null && player.getPlaybackState() != Player.STATE_ENDED) {
                     player.play();
                 }
             } else {
-                if (player != null) {
-                    player.pause();
-                    // Mirror MIUI: seek to start when hidden so next screen-on replays from the beginning.
-                    player.seekTo(0);
-                }
+                // Plain pause on hide; the real screen-off receiver does the rewind/replay.
+                if (player != null) player.pause();
                 glSurfaceView.onPause();
             }
         }
@@ -137,6 +200,27 @@ public class GLWallpaperService extends WallpaperService {
             }
             renderer = null;
             super.onSurfaceDestroyed(surfaceHolder);
+        }
+
+        private void applyPending() {
+            if (pendingVideoId > 0) {
+                final int id = pendingVideoId;
+                pendingVideoId = -1;
+                playVideo(id);
+            }
+        }
+
+        /** Called on any external trigger (broadcast / dark-mode change). */
+        private void recomputeAndMaybeSwitch() {
+            if (!visible || renderer == null) return;
+            final int id = Video24Controller.currentVideoId(context);
+            if (id == currentVideoId) return;
+            if (player != null && player.isPlaying()) {
+                // MIUI: while playing, remember the next video and switch on completion.
+                pendingVideoId = id;
+            } else {
+                playVideo(id);
+            }
         }
 
         private void createGLSurfaceView() {
@@ -164,6 +248,7 @@ public class GLWallpaperService extends WallpaperService {
             }
             releasePlayer();
             currentVideoId = videoId;
+            pendingVideoId = -1;
 
             final File file = Video24Constant.videoFile(context, videoId);
             if (!file.exists() || file.length() == 0) {
@@ -191,6 +276,7 @@ public class GLWallpaperService extends WallpaperService {
             trackSelector.setParameters(
                     trackSelector.buildUponParameters().setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, true));
             player = new ExoPlayer.Builder(context).setTrackSelector(trackSelector).build();
+            player.addListener(playerListener);
             renderer.setSourcePlayer(player);
             player.setMediaItem(MediaItem.fromUri(Uri.fromFile(file)));
             // Match MIUI's Video24WallpaperService: setLooping(false) -> play once, hold last frame.
@@ -204,6 +290,7 @@ public class GLWallpaperService extends WallpaperService {
         private void releasePlayer() {
             if (player != null) {
                 try {
+                    player.removeListener(playerListener);
                     player.release();
                 } catch (Throwable ignored) {
                 }
