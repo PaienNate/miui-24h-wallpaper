@@ -9,6 +9,7 @@ import android.content.pm.ConfigurationInfo;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.service.wallpaper.WallpaperService;
 import android.view.SurfaceHolder;
 
@@ -68,7 +69,13 @@ public class GLWallpaperService extends WallpaperService {
             IntentFilter filter = new IntentFilter();
             filter.addAction(Const.ACTION_VIDEO_CHANGED);
             filter.addAction(Const.ACTION_SUN_UPDATED);
-            registerReceiver(changeReceiver, filter);
+            // Android 13+ (API 33) requires an explicit exported flag for
+            // dynamically registered receivers that handle non-system broadcasts.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(changeReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                registerReceiver(changeReceiver, filter);
+            }
         }
 
         @Override
