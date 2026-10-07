@@ -14,13 +14,28 @@ android {
         versionName "1.0.0"
     }
 
+    // Fixed keystore so every CI build shares the same signature
+    // (lets you update in place without uninstalling / losing imported videos).
+    signingConfigs {
+        ci {
+            storeFile file('keystore.jks')
+            storePassword 'miui24h123'
+            keyAlias 'miui24h'
+            keyPassword 'miui24h123'
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 
     buildTypes {
+        debug {
+            signingConfig signingConfigs.ci
+        }
         release {
+            signingConfig signingConfigs.ci
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
