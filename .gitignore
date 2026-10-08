@@ -9,7 +9,6 @@
 .externalNativeBuild
 .cxx
 *.apk
-*.jpg
 /newIcon.png
 /design/
 /ffmpeg.exe
