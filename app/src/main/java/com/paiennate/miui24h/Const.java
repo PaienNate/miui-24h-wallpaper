@@ -5,6 +5,7 @@ public final class Const {
 
     public static final String OPTIONS_PREF = "options";
     public static final String KEY_SUN_SOURCE = "sun_source";
+    public static final String KEY_HIDE_FROM_RECENTS = "hide_from_recents";
 
     public static final String CACHE_PREF = "sun_cache";
     public static final String KEY_CACHE_DAY = "cache_day";
