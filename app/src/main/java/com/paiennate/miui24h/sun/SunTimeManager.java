@@ -1,4 +1,7 @@
-package com.paiennate.miui24h;
+package com.paiennate.miui24h.sun;
+
+import com.paiennate.miui24h.common.Const;
+import com.paiennate.miui24h.schedule.Video24Controller;
 
 import android.content.Context;
 import android.content.Intent;

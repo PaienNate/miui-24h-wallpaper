@@ -1,4 +1,4 @@
-package com.paiennate.miui24h;
+package com.paiennate.miui24h.common;
 
 public final class Const {
     private Const() {}

@@ -1,4 +1,7 @@
-package com.paiennate.miui24h;
+package com.paiennate.miui24h.receiver;
+
+import com.paiennate.miui24h.schedule.Video24Controller;
+import com.paiennate.miui24h.sun.SunTimeManager;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

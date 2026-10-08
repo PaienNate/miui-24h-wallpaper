@@ -1,4 +1,4 @@
-package com.paiennate.miui24h;
+package com.paiennate.miui24h.wallpaper;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;

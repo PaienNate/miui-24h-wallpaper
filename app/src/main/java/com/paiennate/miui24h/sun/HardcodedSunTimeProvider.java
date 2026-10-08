@@ -1,4 +1,6 @@
-package com.paiennate.miui24h;
+package com.paiennate.miui24h.sun;
+
+import com.paiennate.miui24h.common.Const;
 
 import android.content.Context;
 

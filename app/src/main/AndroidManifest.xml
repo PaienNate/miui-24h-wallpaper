@@ -24,7 +24,7 @@
         android:theme="@android:style/Theme.DeviceDefault.Light">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,7 +33,7 @@
         </activity>
 
         <service
-            android:name=".GLWallpaperService"
+            android:name=".wallpaper.GLWallpaperService"
             android:exported="true"
             android:permission="android.permission.BIND_WALLPAPER">
             <intent-filter>
@@ -45,7 +45,7 @@
         </service>
 
         <receiver
-            android:name=".SchedulerReceiver"
+            android:name=".receiver.SchedulerReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

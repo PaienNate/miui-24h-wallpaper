@@ -1,4 +1,7 @@
-package com.paiennate.miui24h;
+package com.paiennate.miui24h.wallpaper;
+
+import com.paiennate.miui24h.R;
+import com.paiennate.miui24h.common.Utils;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
