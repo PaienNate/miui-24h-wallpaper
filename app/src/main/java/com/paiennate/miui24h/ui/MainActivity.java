@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -165,7 +166,9 @@ public class MainActivity extends Activity {
         status = new TextView(this);
         root.addView(status);
 
-        setContentView(root);
+        ScrollView scroll = new ScrollView(this);
+        scroll.addView(root);
+        setContentView(scroll);
         initialized = true;
 
         // Apply on launch (mirrors SmsForwarder): hide this task from recents if enabled.
