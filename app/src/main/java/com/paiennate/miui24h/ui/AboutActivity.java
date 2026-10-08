@@ -91,6 +91,12 @@ public class AboutActivity extends AppCompatActivity {
         return (int) (v * getResources().getDisplayMetrics().density);
     }
 
+    private int themeColor(int attr) {
+        android.util.TypedValue tv = new android.util.TypedValue();
+        getTheme().resolveAttribute(attr, tv, true);
+        return tv.data;
+    }
+
     private LinearLayout newCard(LinearLayout parent) {
         MaterialCardView card = new MaterialCardView(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -135,7 +141,7 @@ public class AboutActivity extends AppCompatActivity {
     private TextView link(String text, final String url) {
         TextView t = new TextView(this);
         t.setText(text);
-        t.setTextColor(0xFF0A6EBD);
+        t.setTextColor(themeColor(androidx.appcompat.R.attr.colorPrimary));
         t.setPadding(0, dp(2), 0, dp(2));
         t.setOnClickListener(v -> {
             try {
