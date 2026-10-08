@@ -152,6 +152,16 @@ public class MainActivity extends Activity {
         });
         root.addView(hideRecents);
 
+        Button about = new Button(this);
+        about.setText("关于");
+        about.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, AboutActivity.class));
+            }
+        });
+        root.addView(about);
+
         status = new TextView(this);
         root.addView(status);
 
