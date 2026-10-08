@@ -1,3 +1,5 @@
+![One Day · 24 小时经典雪山壁纸](title.jpg)
+
 # MIUI 24H Wallpaper
 
 一个「24 小时动态视频壁纸」应用：把 10 段视频**按当天日出日落自动切换**，运行在一套独立的 Live Wallpaper 引擎上（无任何系统/厂商依赖）。
@@ -89,8 +91,14 @@ GitHub Actions 自动编译（`.github/workflows/build.yml`），产物为 `miui
 - 工具链：AGP 8.5.2 / Java 17 / compileSdk 34
 - 依赖仓库优先走阿里云镜像（见 `settings.gradle`）
 
+## 鸣谢
+
+- 动态壁纸渲染方案参考并改编自 [AlynxZhou/alynx-live-wallpaper](https://github.com/AlynxZhou/alynx-live-wallpaper)（Apache-2.0）
+- 代码移植 By DeepSeek V4
+- 图标首图生成 By 豆包网页版
+
 ## 版权
 
-代码 Apache-2.0。项目的 Live Wallpaper 渲染方案参考并改编自 [AlynxZhou/alynx-live-wallpaper](https://github.com/AlynxZhou/alynx-live-wallpaper)（Apache-2.0）。
+代码 Apache-2.0。
 
 内置视频素材版权归其各自所有者，仅供个人使用，请勿分发。

@@ -46,6 +46,8 @@ public class AboutActivity extends Activity {
         root.addView(section("鸣谢"));
         root.addView(link("AlynxZhou / alynx-live-wallpaper", GITHUB_ALYNX));
         root.addView(body("本项目的动态壁纸渲染方案参考并改编自该项目（Apache-2.0）。"));
+        root.addView(body("代码移植 By DeepSeek V4"));
+        root.addView(body("图标首图生成 By 豆包网页版"));
 
         root.addView(section("项目"));
         root.addView(link(GITHUB_PROJECT, GITHUB_PROJECT));
