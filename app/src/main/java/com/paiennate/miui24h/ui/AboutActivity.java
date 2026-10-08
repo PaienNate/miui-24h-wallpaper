@@ -65,6 +65,7 @@ public class AboutActivity extends AppCompatActivity {
         credits.addView(link("AlynxZhou / alynx-live-wallpaper", GITHUB_ALYNX));
         credits.addView(body("本项目的动态壁纸渲染方案参考并改编自该项目（Apache-2.0）。"));
         credits.addView(body("代码移植 By DeepSeek V4"));
+        credits.addView(body("感谢小麻雀调整图标"));
         credits.addView(body("图标首图生成 By 豆包网页版"));
 
         LinearLayout project = newCard(root);

@@ -1,6 +1,7 @@
 package com.paiennate.miui24h.ui;
 
 import com.paiennate.miui24h.LWApplication;
+import com.paiennate.miui24h.R;
 import com.paiennate.miui24h.common.Const;
 import com.paiennate.miui24h.schedule.Video24Controller;
 import com.paiennate.miui24h.sun.SunTimeManager;
@@ -74,6 +75,14 @@ public class MainActivity extends AppCompatActivity {
 
         MaterialToolbar toolbar = new MaterialToolbar(this);
         toolbar.setTitle("MIUI 24H 壁纸");
+        toolbar.inflateMenu(R.menu.menu_main);
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_about) {
+                startActivity(new Intent(this, AboutActivity.class));
+                return true;
+            }
+            return false;
+        });
         container.addView(toolbar, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -134,13 +143,6 @@ public class MainActivity extends AppCompatActivity {
             applyExcludeFromRecents(isChecked);
         });
         settingsCard.addView(hide);
-
-        MaterialButton about = new MaterialButton(this);
-        about.setText("关于");
-        about.setOnClickListener(v -> startActivity(new Intent(this, AboutActivity.class)));
-        LinearLayout.LayoutParams aboutLp = matchWrap();
-        aboutLp.topMargin = dp(8);
-        settingsCard.addView(about, aboutLp);
 
         // 状态
         LinearLayout statusCard = newCard(root);

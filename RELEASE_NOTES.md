@@ -28,4 +28,5 @@
 
 - 动态壁纸渲染方案参考并改编自 [AlynxZhou/alynx-live-wallpaper](https://github.com/AlynxZhou/alynx-live-wallpaper)
 - 代码移植 By DeepSeek V4
+- 感谢小麻雀调整图标
 - 图标首图生成 By 豆包网页版

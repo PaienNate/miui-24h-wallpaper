@@ -95,6 +95,7 @@ GitHub Actions 自动编译（`.github/workflows/build.yml`），产物为 `miui
 
 - 动态壁纸渲染方案参考并改编自 [AlynxZhou/alynx-live-wallpaper](https://github.com/AlynxZhou/alynx-live-wallpaper)（Apache-2.0）
 - 代码移植 By DeepSeek V4
+- 感谢小麻雀调整图标
 - 图标首图生成 By 豆包网页版
 
 ## 版权
