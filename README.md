@@ -2,14 +2,9 @@
 
 一个「24 小时动态视频壁纸」应用：把 10 段视频**按当天日出日落自动切换**，运行在一套独立的 Live Wallpaper 引擎上（无任何系统/厂商依赖）。
 
-## 视频需自行导入
+## 视频
 
-本仓库**不包含**任何视频素材。首次使用请在应用内导入，二选一：
-
-1. **导入 ZIP 包**：ZIP 内含 `video/01.mp4 … 10.mp4`（可选 `thumnail/01.jpg … 10.jpg`）。
-2. **选择视频文件**：多选 10 个文件，命名为 `01.mp4 … 10.mp4`。
-
-导入后会复制到应用私有目录 `filesDir/miui-video24/`，壁纸服务从那里读取。
+10 段视频**内置**在 `app/src/main/assets/miui-video24/video/01..10.mp4`，用 x264 重编码（约 20 MB），**无需用户导入**，装上即用。
 
 ## 行为说明
 
@@ -59,13 +54,12 @@
 app/src/main/java/com/paiennate/miui24h/
 ├── LWApplication.java              应用入口；捕获未处理异常写入 last_crash.txt
 ├── ui/
-│   └── MainActivity.java           设置界面（导入视频、选择来源、应用壁纸、隐藏最近任务、崩溃日志）
+│   └── MainActivity.java           设置界面（选择来源、应用壁纸、隐藏最近任务、崩溃日志）
 ├── common/
 │   ├── Const.java                  全局常量（prefs key、来源编号、广播动作）
 │   └── Utils.java                  工具：着色器编译、HTTP GET、最后已知位置、日志
 ├── data/
-│   ├── Video24Constant.java        视频存放约定（filesDir/miui-video24/video/NN.mp4）与就绪检查
-│   └── ImportManager.java          从 ZIP 或单个文件导入视频到内部存储
+│   └── Video24Constant.java        内置视频资源路径（assets/miui-video24/video/NN.mp4）
 ├── sun/
 │   ├── SunTimes.java               日出/日落（分钟）+ 来源名
 │   ├── SunTimeProvider.java        日出日落来源接口
@@ -99,4 +93,4 @@ GitHub Actions 自动编译（`.github/workflows/build.yml`），产物为 `miui
 
 代码 Apache-2.0。项目的 Live Wallpaper 渲染方案参考并改编自 [AlynxZhou/alynx-live-wallpaper](https://github.com/AlynxZhou/alynx-live-wallpaper)（Apache-2.0）。
 
-用户自行导入的视频素材与音频版权归其各自所有者，仅供个人使用，请勿分发。
+内置视频素材版权归其各自所有者，仅供个人使用，请勿分发。

@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ConfigurationInfo;
+import android.content.res.AssetFileDescriptor;
 import android.database.ContentObserver;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
@@ -255,16 +256,14 @@ public class GLWallpaperService extends WallpaperService {
             currentVideoId = videoId;
             pendingVideoId = -1;
 
-            final File file = Video24Constant.videoFile(context, videoId);
-            if (!file.exists() || file.length() == 0) {
-                Utils.debug("GLWallpaperEngine", "video missing: " + file);
-                return;
-            }
+            final String asset = Video24Constant.videoAsset(videoId);
 
             int w = 1080, h = 1920, rot = 0;
             try {
                 MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-                mmr.setDataSource(file.getAbsolutePath());
+                AssetFileDescriptor afd = getAssets().openFd(asset);
+                mmr.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getDeclaredLength());
+                afd.close();
                 String rs = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
                 String ws = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
                 String hs = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
@@ -283,7 +282,7 @@ public class GLWallpaperService extends WallpaperService {
             player = new ExoPlayer.Builder(context).setTrackSelector(trackSelector).build();
             player.addListener(playerListener);
             renderer.setSourcePlayer(player);
-            player.setMediaItem(MediaItem.fromUri(Uri.fromFile(file)));
+            player.setMediaItem(MediaItem.fromUri(Video24Constant.assetUri(videoId)));
             // Match MIUI's Video24WallpaperService: setLooping(false) -> play once, hold last frame.
             player.setRepeatMode(Player.REPEAT_MODE_OFF);
             player.setVolume(0f);

@@ -9,9 +9,7 @@
 .externalNativeBuild
 .cxx
 *.apk
-*.mp4
 *.jpg
-/app/src/main/assets/
 /newIcon.png
 /design/
 /ffmpeg.exe
