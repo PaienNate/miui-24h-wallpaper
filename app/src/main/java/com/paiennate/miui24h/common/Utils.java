@@ -1,4 +1,4 @@
-package com.paiennate.miui24h;
+package com.paiennate.miui24h.common;
 
 import android.content.Context;
 import android.location.Location;

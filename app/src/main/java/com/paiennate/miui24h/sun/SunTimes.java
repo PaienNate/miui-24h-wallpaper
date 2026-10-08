@@ -1,4 +1,4 @@
-package com.paiennate.miui24h;
+package com.paiennate.miui24h.sun;
 
 public final class SunTimes {
     public final int sunriseMin;

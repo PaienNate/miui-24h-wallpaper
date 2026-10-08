@@ -1,4 +1,12 @@
-package com.paiennate.miui24h;
+package com.paiennate.miui24h.ui;
+
+import com.paiennate.miui24h.LWApplication;
+import com.paiennate.miui24h.common.Const;
+import com.paiennate.miui24h.data.ImportManager;
+import com.paiennate.miui24h.data.Video24Constant;
+import com.paiennate.miui24h.schedule.Video24Controller;
+import com.paiennate.miui24h.sun.SunTimeManager;
+import com.paiennate.miui24h.wallpaper.GLWallpaperService;
 
 import android.Manifest;
 import android.app.Activity;

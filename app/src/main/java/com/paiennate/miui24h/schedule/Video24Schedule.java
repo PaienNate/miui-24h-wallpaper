@@ -1,4 +1,6 @@
-package com.paiennate.miui24h;
+package com.paiennate.miui24h.schedule;
+
+import com.paiennate.miui24h.data.Video24Constant;
 
 import java.util.ArrayList;
 import java.util.List;
