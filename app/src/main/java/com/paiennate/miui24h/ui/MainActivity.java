@@ -6,6 +6,7 @@ import com.paiennate.miui24h.data.ImportManager;
 import com.paiennate.miui24h.data.Video24Constant;
 import com.paiennate.miui24h.schedule.Video24Controller;
 import com.paiennate.miui24h.sun.SunTimeManager;
+import com.paiennate.miui24h.sun.SunTimes;
 import com.paiennate.miui24h.wallpaper.GLWallpaperService;
 
 import android.Manifest;
