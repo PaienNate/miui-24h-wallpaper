@@ -2,6 +2,7 @@ package com.paiennate.miui24h;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.ClipData;
@@ -17,6 +18,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -158,11 +161,26 @@ public class MainActivity extends Activity {
         });
         root.addView(crashBtn);
 
+        CheckBox hideRecents = new CheckBox(this);
+        hideRecents.setText("在最近任务中隐藏（防误杀）");
+        hideRecents.setChecked(isHideFromRecents());
+        hideRecents.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                setHideFromRecents(isChecked);
+                applyExcludeFromRecents(isChecked);
+            }
+        });
+        root.addView(hideRecents);
+
         status = new TextView(this);
         root.addView(status);
 
         setContentView(root);
         initialized = true;
+
+        // Apply on launch (mirrors SmsForwarder): hide this task from recents if enabled.
+        applyExcludeFromRecents(isHideFromRecents());
     }
 
     @Override
@@ -171,6 +189,34 @@ public class MainActivity extends Activity {
         SunTimeManager.refreshAsync(this);
         maybeRequestLocation(SunTimeManager.getSunSource(this));
         updateStatus();
+    }
+
+    private boolean isHideFromRecents() {
+        return getSharedPreferences(Const.OPTIONS_PREF, MODE_PRIVATE)
+                .getBoolean(Const.KEY_HIDE_FROM_RECENTS, false);
+    }
+
+    private void setHideFromRecents(boolean value) {
+        getSharedPreferences(Const.OPTIONS_PREF, MODE_PRIVATE)
+                .edit().putBoolean(Const.KEY_HIDE_FROM_RECENTS, value).apply();
+    }
+
+    /**
+     * Hide/show this task in the recent-tasks list.
+     * Same approach as SmsForwarder / sealdice: ActivityManager.AppTask.setExcludeFromRecents()
+     * modifies the Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS flag of the task's root intent.
+     */
+    private void applyExcludeFromRecents(boolean exclude) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+        try {
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            if (am == null) return;
+            List<ActivityManager.AppTask> tasks = am.getAppTasks();
+            if (tasks != null && !tasks.isEmpty()) {
+                tasks.get(0).setExcludeFromRecents(exclude);
+            }
+        } catch (Throwable ignored) {
+        }
     }
 
     private void pickZip() {
