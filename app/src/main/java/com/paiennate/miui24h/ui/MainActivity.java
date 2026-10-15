@@ -18,6 +18,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
@@ -66,8 +67,16 @@ public class MainActivity extends AppCompatActivity {
             Const.SRC_SUNRISESUNSET,
             Const.SRC_HARDCODED
     };
+    /** Labels for the 10 time-of-day segments, used by the "lock wallpaper" chooser. */
+    private static final String[] SEGMENT_LABELS = {
+            "第 1 段 · 日出前", "第 2 段 · 日出", "第 3 段 · 日出后",
+            "第 4 段 · 上午", "第 5 段 · 正午", "第 6 段 · 下午",
+            "第 7 段 · 日落前", "第 8 段 · 日落", "第 9 段 · 日落后",
+            "第 10 段 · 夜间"
+    };
 
     private MaterialAutoCompleteTextView sourceView;
+    private MaterialButton lockButton;
     private TextView status;
     private boolean initialized = false;
 
@@ -100,11 +109,11 @@ public class MainActivity extends AppCompatActivity {
         container.addView(scroll, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
-        // 日出日落来源
-        LinearLayout sourceCard = newCard(root);
-        sourceCard.addView(label("日出日落来源"));
+        // ===== 壁纸切换 =====
+        LinearLayout switchCard = newCard("壁纸切换", root);
+
         TextInputLayout til = new TextInputLayout(this);
-        til.setHint("来源");
+        til.setHint("日出日落来源");
         til.setEndIconMode(TextInputLayout.END_ICON_DROPDOWN_MENU);
         sourceView = new MaterialAutoCompleteTextView(this);
         sourceView.setInputType(InputType.TYPE_NULL);
@@ -119,14 +128,26 @@ public class MainActivity extends AppCompatActivity {
             status.postDelayed(MainActivity.this::updateStatus, 800);
         });
         til.addView(sourceView);
-        sourceCard.addView(til);
+        switchCard.addView(til);
 
-        // 操作
-        LinearLayout actionCard = newCard(root);
-        MaterialButton apply = new MaterialButton(this);
-        apply.setText("应用壁纸");
-        apply.setOnClickListener(v -> applyWallpaper());
-        actionCard.addView(apply, matchWrap());
+        MaterialSwitch nightLock = new MaterialSwitch(this);
+        nightLock.setText("深色模式锁定黑夜壁纸");
+        nightLock.setChecked(Video24Controller.isNightLockEnabled(this));
+        nightLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            getSharedPreferences(Const.OPTIONS_PREF, MODE_PRIVATE)
+                    .edit().putBoolean(Const.KEY_NIGHT_LOCK, isChecked).apply();
+            Video24Controller.broadcastIfChanged(this);
+            status.postDelayed(this::updateStatus, 300);
+        });
+        LinearLayout.LayoutParams nightLp = matchWrap();
+        nightLp.topMargin = dp(12);
+        switchCard.addView(nightLock, nightLp);
+
+        lockButton = new MaterialButton(this);
+        lockButton.setOnClickListener(v -> showLockDialog());
+        LinearLayout.LayoutParams lockLp = matchWrap();
+        lockLp.topMargin = dp(8);
+        switchCard.addView(lockButton, lockLp);
 
         MaterialButton refresh = new MaterialButton(this);
         refresh.setText("立即刷新日出日落");
@@ -136,10 +157,17 @@ public class MainActivity extends AppCompatActivity {
         });
         LinearLayout.LayoutParams refreshLp = matchWrap();
         refreshLp.topMargin = dp(8);
-        actionCard.addView(refresh, refreshLp);
+        switchCard.addView(refresh, refreshLp);
 
-        // 设置
-        LinearLayout settingsCard = newCard(root);
+        // ===== 应用 =====
+        LinearLayout applyCard = newCard("应用", root);
+        MaterialButton apply = new MaterialButton(this);
+        apply.setText("应用壁纸");
+        apply.setOnClickListener(v -> applyWallpaper());
+        applyCard.addView(apply, matchWrap());
+
+        // ===== 系统 =====
+        LinearLayout systemCard = newCard("系统", root);
         MaterialSwitch hide = new MaterialSwitch(this);
         hide.setText("在最近任务中隐藏（防误杀）");
         hide.setChecked(isHideFromRecents());
@@ -147,37 +175,24 @@ public class MainActivity extends AppCompatActivity {
             setHideFromRecents(isChecked);
             applyExcludeFromRecents(isChecked);
         });
-        settingsCard.addView(hide);
-
-        MaterialSwitch nightLock = new MaterialSwitch(this);
-        nightLock.setText("深色模式锁定黑夜壁纸");
-        nightLock.setChecked(Video24Controller.isNightLockEnabled(this));
-        nightLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            getSharedPreferences(Const.OPTIONS_PREF, MODE_PRIVATE)
-                    .edit().putBoolean(Const.KEY_NIGHT_LOCK, isChecked).apply();
-            // Re-evaluate the current video immediately (dark mode on/off matters).
-            Video24Controller.broadcastIfChanged(this);
-            status.postDelayed(this::updateStatus, 300);
-        });
-        LinearLayout.LayoutParams nightLp = matchWrap();
-        nightLp.topMargin = dp(8);
-        settingsCard.addView(nightLock, nightLp);
-
-        // 状态
-        LinearLayout statusCard = newCard(root);
-        status = new TextView(this);
-        statusCard.addView(status);
+        systemCard.addView(hide);
 
         MaterialButton crash = new MaterialButton(this);
         crash.setText("查看 / 复制崩溃日志");
         crash.setOnClickListener(v -> showCrashLog());
         LinearLayout.LayoutParams crashLp = matchWrap();
         crashLp.topMargin = dp(8);
-        statusCard.addView(crash, crashLp);
+        systemCard.addView(crash, crashLp);
+
+        // ===== 状态 =====
+        LinearLayout statusCard = newCard("状态", root);
+        status = new TextView(this);
+        statusCard.addView(status);
 
         setContentView(container);
         initialized = true;
         applyExcludeFromRecents(isHideFromRecents());
+        updateLockButton();
         maybeShowIntro();
     }
 
@@ -185,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         SunTimeManager.refreshAsync(this);
+        updateLockButton();
         updateStatus();
     }
 
@@ -192,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
         return (int) (v * getResources().getDisplayMetrics().density);
     }
 
-    private LinearLayout newCard(LinearLayout parent) {
+    private LinearLayout newCard(String title, LinearLayout parent) {
         MaterialCardView card = new MaterialCardView(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -205,6 +221,16 @@ public class MainActivity extends AppCompatActivity {
         col.setOrientation(LinearLayout.VERTICAL);
         int cpad = dp(16);
         col.setPadding(cpad, cpad, cpad, cpad);
+
+        if (title != null) {
+            TextView t = new TextView(this);
+            t.setText(title);
+            t.setTextSize(16);
+            t.setTypeface(Typeface.DEFAULT_BOLD);
+            t.setPadding(0, 0, 0, dp(8));
+            col.addView(t);
+        }
+
         card.addView(col, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         parent.addView(card);
@@ -216,18 +242,39 @@ public class MainActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
-    private TextView label(String s) {
-        TextView t = new TextView(this);
-        t.setText(s);
-        t.setPadding(0, 0, 0, dp(8));
-        return t;
-    }
-
     private int indexOf(int value) {
         for (int i = 0; i < values.length; i++) {
             if (values[i] == value) return i;
         }
         return 0;
+    }
+
+    private void updateLockButton() {
+        if (lockButton == null) return;
+        int locked = Video24Controller.lockedVideoId(this);
+        lockButton.setText(locked > 0
+                ? ("锁定壁纸：" + SEGMENT_LABELS[locked - 1] + "（点此更改）")
+                : "锁定壁纸：自动（点此锁定某一段）");
+    }
+
+    private void showLockDialog() {
+        final String[] items = new String[SEGMENT_LABELS.length + 1];
+        items[0] = "自动（按日出日落切换）";
+        System.arraycopy(SEGMENT_LABELS, 0, items, 1, SEGMENT_LABELS.length);
+
+        int checked = Video24Controller.lockedVideoId(this);
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("锁定壁纸（锁死后不再自动切换）")
+                .setSingleChoiceItems(items, checked, (dialog, which) -> {
+                    getSharedPreferences(Const.OPTIONS_PREF, MODE_PRIVATE)
+                            .edit().putInt(Const.KEY_LOCKED_VIDEO, which).apply();
+                    dialog.dismiss();
+                    Video24Controller.broadcastIfChanged(this);
+                    updateLockButton();
+                    status.postDelayed(this::updateStatus, 300);
+                })
+                .setNegativeButton("取消", null)
+                .show();
     }
 
     private boolean isHideFromRecents() {
@@ -316,12 +363,14 @@ public class MainActivity extends AppCompatActivity {
         SunTimes st = SunTimeManager.getTodayCachedOrFallback(this);
         int videoId = Video24Controller.currentVideoId(this);
         boolean night = Video24Controller.isNightMode(this);
+        boolean locked = Video24Controller.lockedVideoId(this) > 0;
+        String mode = locked ? "（已锁定）" : (Video24Controller.isNightLockEnabled(this) && night ? "（深色模式）" : "");
         String text = String.format(Locale.US,
                 "来源：%s\n日出：%02d:%02d　日落：%02d:%02d\n当前视频：第 %d 段%s",
                 st.sourceName,
                 st.sunriseMin / 60, st.sunriseMin % 60,
                 st.sunsetMin / 60, st.sunsetMin % 60,
-                videoId, night ? "（深色模式）" : "");
+                videoId, mode);
         status.setText(text);
     }
 

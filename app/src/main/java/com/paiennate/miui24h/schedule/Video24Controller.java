@@ -31,7 +31,15 @@ public final class Video24Controller {
                 .getBoolean(Const.KEY_NIGHT_LOCK, true);
     }
 
+    /** 0 = auto (by time); 1..10 = locked to that video. */
+    public static int lockedVideoId(Context c) {
+        return c.getSharedPreferences(Const.OPTIONS_PREF, Context.MODE_PRIVATE)
+                .getInt(Const.KEY_LOCKED_VIDEO, 0);
+    }
+
     public static int currentVideoId(Context c) {
+        int locked = lockedVideoId(c);
+        if (locked > 0) return locked;
         if (isNightLockEnabled(c) && isNightMode(c)) return Video24Constant.NIGHT_VIDEO_ID;
         SunTimes st = SunTimeManager.getTodayCachedOrFallback(c);
         List<Video24Schedule.Entry> table = Video24Schedule.buildTable(st.sunriseMin, st.sunsetMin);
@@ -54,6 +62,7 @@ public final class Video24Controller {
 
     /** P4-B: exact alarm at the next boundary (best-effort; falls back to inexact). */
     public static void scheduleNextAlarm(Context c) {
+        if (lockedVideoId(c) > 0) return;
         SunTimes st = SunTimeManager.getTodayCachedOrFallback(c);
         List<Video24Schedule.Entry> table = Video24Schedule.buildTable(st.sunriseMin, st.sunsetMin);
         Calendar now = Calendar.getInstance();

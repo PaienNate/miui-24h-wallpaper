@@ -18,7 +18,7 @@ public final class SunTimeManager {
 
     public static int getSunSource(Context c) {
         return c.getSharedPreferences(Const.OPTIONS_PREF, Context.MODE_PRIVATE)
-                .getInt(Const.KEY_SUN_SOURCE, Const.SRC_OFFLINE);
+                .getInt(Const.KEY_SUN_SOURCE, Const.SRC_TENCENT);
     }
 
     public static void setSunSource(Context c, int value) {

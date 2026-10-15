@@ -7,6 +7,7 @@ public final class Const {
     public static final String KEY_SUN_SOURCE = "sun_source";
     public static final String KEY_HIDE_FROM_RECENTS = "hide_from_recents";
     public static final String KEY_NIGHT_LOCK = "night_lock";
+    public static final String KEY_LOCKED_VIDEO = "locked_video";
     public static final String KEY_SHOWN_INTRO = "shown_intro";
 
     public static final String CACHE_PREF = "sun_cache";
