@@ -25,8 +25,14 @@ public final class Video24Controller {
         return mask == Configuration.UI_MODE_NIGHT_YES;
     }
 
+    /** Whether dark mode should force the "night" video (video 10). */
+    public static boolean isNightLockEnabled(Context c) {
+        return c.getSharedPreferences(Const.OPTIONS_PREF, Context.MODE_PRIVATE)
+                .getBoolean(Const.KEY_NIGHT_LOCK, true);
+    }
+
     public static int currentVideoId(Context c) {
-        if (isNightMode(c)) return Video24Constant.NIGHT_VIDEO_ID;
+        if (isNightLockEnabled(c) && isNightMode(c)) return Video24Constant.NIGHT_VIDEO_ID;
         SunTimes st = SunTimeManager.getTodayCachedOrFallback(c);
         List<Video24Schedule.Entry> table = Video24Schedule.buildTable(st.sunriseMin, st.sunsetMin);
         Calendar cal = Calendar.getInstance();

@@ -16,10 +16,13 @@ import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.InputType;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -46,6 +49,8 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQ_LOCATION = 100;
+    private static final String XIAOMI_DOC =
+            "https://dev.mi.com/xiaomihyperos/documentation/detail?pId=1743";
 
     private final String[] labels = {
             "离线算法（需定位）",
@@ -144,6 +149,20 @@ public class MainActivity extends AppCompatActivity {
         });
         settingsCard.addView(hide);
 
+        MaterialSwitch nightLock = new MaterialSwitch(this);
+        nightLock.setText("深色模式锁定黑夜壁纸");
+        nightLock.setChecked(Video24Controller.isNightLockEnabled(this));
+        nightLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            getSharedPreferences(Const.OPTIONS_PREF, MODE_PRIVATE)
+                    .edit().putBoolean(Const.KEY_NIGHT_LOCK, isChecked).apply();
+            // Re-evaluate the current video immediately (dark mode on/off matters).
+            Video24Controller.broadcastIfChanged(this);
+            status.postDelayed(this::updateStatus, 300);
+        });
+        LinearLayout.LayoutParams nightLp = matchWrap();
+        nightLp.topMargin = dp(8);
+        settingsCard.addView(nightLock, nightLp);
+
         // 状态
         LinearLayout statusCard = newCard(root);
         status = new TextView(this);
@@ -159,13 +178,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(container);
         initialized = true;
         applyExcludeFromRecents(isHideFromRecents());
+        maybeShowIntro();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         SunTimeManager.refreshAsync(this);
-        maybeRequestLocation(SunTimeManager.getSunSource(this));
         updateStatus();
     }
 
@@ -243,12 +262,54 @@ public class MainActivity extends AppCompatActivity {
         boolean needsLocation = src == Const.SRC_OFFLINE
                 || src == Const.SRC_OPENMETEO
                 || src == Const.SRC_SUNRISESUNSET;
-        if (!needsLocation) return;
+        if (needsLocation) requestLocationPermission();
+    }
+
+    private void requestLocationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[] { Manifest.permission.ACCESS_COARSE_LOCATION }, REQ_LOCATION);
         }
+    }
+
+    private static boolean isXiaomiLike() {
+        String s = (Build.BRAND + " " + Build.MANUFACTURER).toLowerCase(Locale.US);
+        return s.contains("xiaomi") || s.contains("redmi") || s.contains("poco");
+    }
+
+    /**
+     * First-run dialog (shown once): explains why location is optional, recommends
+     * turning off battery optimization, and reminds (Xiaomi/HyperOS) users that the
+     * dynamic-wallpaper permission may need to be granted manually.
+     */
+    private void maybeShowIntro() {
+        SharedPreferences sp = getSharedPreferences(Const.OPTIONS_PREF, MODE_PRIVATE);
+        if (sp.getBoolean(Const.KEY_SHOWN_INTRO, false)) return;
+        sp.edit().putBoolean(Const.KEY_SHOWN_INTRO, true).apply();
+
+        String xiaomiLine = isXiaomiLike()
+                ? "检测到小米 / 澎湃设备：可能还需要手动为本应用开启「动态壁纸」权限，"
+                : "部分机型（如小米 / 澎湃）可能还需要手动为本应用开启「动态壁纸」权限，";
+        String html = "为保证壁纸按时切换，请注意两点：<br/><br/>"
+                + "<b>1. 定位权限（可选）</b><br/>"
+                + "用于计算你所在地的日出日落，从而按时段切换壁纸。<br/>"
+                + "不想授权也可以：把「来源」改成「腾讯天气（IP 定位）」（按 IP 取日出日落），或「固定 06:00 / 18:00」。<br/><br/>"
+                + "<b>2. 关闭电池优化（建议）</b><br/>"
+                + "否则系统可能清理后台，导致壁纸不按时切换。可在「关于」里一键前往电池优化设置。<br/><br/>"
+                + xiaomiLine
+                + "<a href=\"" + XIAOMI_DOC + "\">查看官方说明</a>。";
+
+        TextView msg = new TextView(this);
+        msg.setText(Html.fromHtml(html));
+        msg.setMovementMethod(LinkMovementMethod.getInstance());
+        msg.setPadding(dp(24), dp(8), dp(24), dp(8));
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("权限与省电提示")
+                .setView(msg)
+                .setPositiveButton("授权定位", (d, w) -> requestLocationPermission())
+                .setNegativeButton("知道了", null)
+                .show();
     }
 
     private void updateStatus() {
