@@ -67,19 +67,21 @@ public class GLWallpaperService extends WallpaperService {
             }
         };
 
-        /**
-         * Pause on screen-off, resume on screen-on. Deliberately NO seek/replay here:
-         * on some ROMs (MIUI / VIVO) these broadcasts (and visibility callbacks) arrive late,
-         * so replaying on screen-on makes the video visibly jump back to the start.
-         */
+        /** MIUI keys off real screen on/off (not visibility): replay on screen-on, rewind on screen-off. */
         private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context c, Intent intent) {
                 final String action = intent.getAction();
                 if (Intent.ACTION_SCREEN_ON.equals(action)) {
-                    resumeOrRestart();
+                    if (player != null) {
+                        player.seekTo(0);
+                        player.play();
+                    }
                 } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
-                    if (player != null) player.pause();
+                    if (player != null) {
+                        player.pause();
+                        player.seekTo(0);
+                    }
                 }
             }
         };
@@ -183,9 +185,12 @@ public class GLWallpaperService extends WallpaperService {
             if (isVisible) {
                 glSurfaceView.onResume();
                 recomputeAndMaybeSwitch();
-                resumeOrRestart();
+                // Resume (do not replay) unless playback already ended.
+                if (player != null && player.getPlaybackState() != Player.STATE_ENDED) {
+                    player.play();
+                }
             } else {
-                // Keep the current position so wake-up resumes smoothly instead of jumping back.
+                // Plain pause on hide; the real screen-off receiver does the rewind/replay.
                 if (player != null) player.pause();
                 glSurfaceView.onPause();
             }
@@ -222,15 +227,6 @@ public class GLWallpaperService extends WallpaperService {
             } else {
                 playVideo(id);
             }
-        }
-
-        /** Resume from the current position; only replay from the start if the clip already finished. */
-        private void resumeOrRestart() {
-            if (player == null) return;
-            if (player.getPlaybackState() == Player.STATE_ENDED) {
-                player.seekTo(0);
-            }
-            player.play();
         }
 
         private void createGLSurfaceView() {
